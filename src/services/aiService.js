@@ -1,10 +1,6 @@
 import axios from "axios";
 
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const GEMINI_MODEL =
-  process.env.EXPO_PUBLIC_GEMINI_MODEL || "gemini-2.0-flash";
-
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const BACKEND_URL = "http://localhost:3000";
 
 export class AIServiceError extends Error {
   constructor(message, isConfigError = false) {
@@ -15,48 +11,12 @@ export class AIServiceError extends Error {
 }
 
 export async function sendMessageToAI(history) {
-  if (!GEMINI_API_KEY) {
-    throw new AIServiceError(
-      "No Gemini API key found. Add EXPO_PUBLIC_GEMINI_API_KEY to your .env file and restart the app.",
-      true
-    );
-  }
-
   try {
-    const contents = history.map((message) => ({
-      role: message.role === "assistant" ? "model" : "user",
-      parts: [{ text: message.content }],
-    }));
+    const response = await axios.post(`${BACKEND_URL}/api/chat`, {
+      history,
+    });
 
-    const response = await axios.post(
-      GEMINI_URL,
-      {
-        systemInstruction: {
-          parts: [
-            {
-              text: "You are a helpful, friendly assistant inside a mobile chat app. Keep answers concise and clear.",
-            },
-          ],
-        },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 500,
-        },
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        params: {
-          key: GEMINI_API_KEY,
-        },
-        timeout: 30000,
-      }
-    );
-
-    const reply =
-      response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const reply = response?.data?.reply;
 
     if (!reply) {
       throw new AIServiceError(
@@ -72,20 +32,7 @@ export async function sendMessageToAI(history) {
 
     if (error.response) {
       const status = error.response.status;
-      const message = error.response?.data?.error?.message;
-
-      if (status === 400) {
-        throw new AIServiceError(
-          message || "Invalid Gemini request. Please check the configuration."
-        );
-      }
-
-      if (status === 401 || status === 403) {
-        throw new AIServiceError(
-          "Invalid or unauthorized Gemini API key. Please check your .env file.",
-          true
-        );
-      }
+      const message = error.response?.data?.error;
 
       if (status === 429) {
         throw new AIServiceError(
@@ -98,14 +45,8 @@ export async function sendMessageToAI(history) {
       );
     }
 
-    if (error.code === "ECONNABORTED") {
-      throw new AIServiceError(
-        "The request timed out. Check your connection and try again."
-      );
-    }
-
     throw new AIServiceError(
-      "Network error. Please check your internet connection."
+      "Cannot connect to the AI server. Please make sure the backend is running."
     );
   }
 }
