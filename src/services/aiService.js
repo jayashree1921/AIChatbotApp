@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://aichatbotapp-qa09.onrender.com";
 
 export class AIServiceError extends Error {
   constructor(message, isConfigError = false) {
@@ -12,9 +12,18 @@ export class AIServiceError extends Error {
 
 export async function sendMessageToAI(history) {
   try {
-    const response = await axios.post(`${BACKEND_URL}/api/chat`, {
-      history,
-    });
+    const response = await axios.post(
+      `${BACKEND_URL}/api/chat`,
+      {
+        history,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        timeout: 60000,
+      }
+    );
 
     const reply = response?.data?.reply;
 
@@ -45,8 +54,14 @@ export async function sendMessageToAI(history) {
       );
     }
 
+    if (error.code === "ECONNABORTED") {
+      throw new AIServiceError(
+        "The request timed out. Please try again."
+      );
+    }
+
     throw new AIServiceError(
-      "Cannot connect to the AI server. Please make sure the backend is running."
+      "Network error. Please check your internet connection."
     );
   }
 }
