@@ -1,7 +1,10 @@
 # AI Chatbot App
 
-A mobile AI chatbot application built using React Native and Expo. 
-The application allows users to communicate with an AI assistant using the Google Gemini API.
+A mobile AI chatbot application built using React Native and Expo. The application allows users to communicate with an AI assistant powered by the Google Gemini API.
+
+## Demo
+
+https://aichatbotapp-frontend.onrender.com
 
 ## Features
 
@@ -11,46 +14,80 @@ The application allows users to communicate with an AI assistant using the Googl
 - Loading/typing indicator
 - Error handling
 - Clear chat history
-- Responsive mobile UI
+- Responsive UI
 - Chat timestamps
+- Backend API for secure Gemini communication
 
 ## Tech Stack
 
+### Frontend
 - React Native
 - Expo
 - JavaScript
-- Google Gemini API
+- Axios
 - AsyncStorage
 - react-native-uuid
 
-## AI Model
+### Backend
+- Node.js
+- Express.js
+- Axios
+- CORS
+- dotenv
 
-The application uses Google Gemini through the Gemini API.
+### AI Service
+- Google Gemini API
 
-The model is configured using:
+### Deployment
+- GitHub
+- Render
 
-`EXPO_PUBLIC_GEMINI_MODEL`
+## Architecture
 
-The API key is configured using:
+The application follows a frontend-backend architecture:
 
-`EXPO_PUBLIC_GEMINI_API_KEY`
+User
+↓
+React Native / Expo Frontend
+↓
+Node.js + Express Backend
+↓
+Google Gemini API
+↓
+AI Response
+↓
+Frontend
+
+The frontend sends the conversation history to the backend through the `/api/chat` endpoint. The backend communicates with Google Gemini and returns the generated response to the frontend.
 
 ## Project Structure
 
 ```text
 AIChatbotApp/
-├── components/
-│   ├── ChatBubble.js
-│   ├── ChatInput.js
-│   └── TypingIndicator.js
-├── screens/
-│   └── ChatScreen.js
-├── services/
-│   ├── aiService.js
-│   └── storageService.js
-├── theme/
-│   └── colors.js
-├── assets/
+├── server/
+│   └── server.js
+│
+├── src/
+│   ├── components/
+│   │   ├── ChatBubble.js
+│   │   ├── ChatInput.js
+│   │   └── TypingIndicator.js
+│   │
+│   ├── screens/
+│   │   └── ChatScreen.js
+│   │
+│   ├── services/
+│   │   ├── aiService.js
+│   │   └── storageService.js
+│   │
+│   └── theme/
+│       └── colors.js
+│
+├── App.js
 ├── app.json
+├── babel.config.js
 ├── package.json
+├── package-lock.json
+├── .env.example
+├── .gitignore
 └── README.md
